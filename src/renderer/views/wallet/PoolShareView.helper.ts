@@ -1,3 +1,4 @@
+import { MAYA_DECIMAL } from '@xchainjs/xchain-mayachain'
 import { THORChain } from '@xchainjs/xchain-thorchain'
 import { BaseAmount, Chain } from '@xchainjs/xchain-util'
 import { array as A, function as FP, option as O } from 'fp-ts'
@@ -31,7 +32,9 @@ export const getSharesTotal = (
           // 1. get shares
           // runeDepth is in 1e8 for both THORChain and MAYAChain midgard APIs
           const runeShare = ShareHelpers.getRuneShare(units, poolDetail, THORCHAIN_DECIMAL)
-          const assetDecimal = parseInt(poolDetail.nativeDecimal || '8', 10) || 8
+          const parsedDecimal = parseInt(poolDetail.nativeDecimal || '8', 10)
+          // MAYAMidgard returns nativeDecimal="-1" for MAYA.MAYA; parseInt gives -1 (truthy), bypassing || 8
+          const assetDecimal = parsedDecimal > 0 ? parsedDecimal : MAYA_DECIMAL
           // THORChain assetDepth is always in 1e8; MAYAChain assetDepth is in native decimal
           const assetDexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : assetDecimal
           const assetShare = ShareHelpers.getAssetShare({
@@ -71,7 +74,9 @@ export const getPoolShareTableData = (
         O.map((poolDetail) => {
           // runeDepth is in 1e8 for both THORChain and MAYAChain midgard APIs
           const runeShare = ShareHelpers.getRuneShare(units, poolDetail, THORCHAIN_DECIMAL)
-          const assetDecimal = parseInt(poolDetail.nativeDecimal || '8', 10) || 8
+          const parsedDecimal = parseInt(poolDetail.nativeDecimal || '8', 10)
+          // MAYAMidgard returns nativeDecimal="-1" for MAYA.MAYA; parseInt gives -1 (truthy), bypassing || 8
+          const assetDecimal = parsedDecimal > 0 ? parsedDecimal : MAYA_DECIMAL
           // THORChain assetDepth is always in 1e8; MAYAChain assetDepth is in native decimal
           const assetDexDecimal = protocol === THORChain ? THORCHAIN_DECIMAL : assetDecimal
           const assetShare = ShareHelpers.getAssetShare({

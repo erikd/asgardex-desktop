@@ -12,7 +12,7 @@ import { DOGEChain } from '@xchainjs/xchain-doge'
 import { ETH_GAS_ASSET_DECIMAL, ETHChain } from '@xchainjs/xchain-ethereum'
 import { KUJIChain } from '@xchainjs/xchain-kujira'
 import { LTCChain } from '@xchainjs/xchain-litecoin'
-import { CACAO_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
+import { CACAO_DECIMAL, MAYA_DECIMAL, MAYAChain } from '@xchainjs/xchain-mayachain'
 import { PoolDetail } from '@xchainjs/xchain-mayamidgard'
 import { AssetXRD, RadixChain, XRD_DECIMAL } from '@xchainjs/xchain-radix'
 import { XRPChain } from '@xchainjs/xchain-ripple'
@@ -228,10 +228,15 @@ export const toPoolData = ({
   assetDepth,
   runeDepth,
   nativeDecimal
-}: Pick<PoolDetail, 'assetDepth' | 'runeDepth' | 'nativeDecimal'>): PoolData => ({
-  dexBalance: convertBaseAmountDecimal(baseAmount(runeDepth, THORCHAIN_DECIMAL), CACAO_DECIMAL),
-  assetBalance: convertBaseAmountDecimal(baseAmount(assetDepth, parseInt(nativeDecimal, 10)), CACAO_DECIMAL)
-})
+}: Pick<PoolDetail, 'assetDepth' | 'runeDepth' | 'nativeDecimal'>): PoolData => {
+  // MAYAMidgard returns nativeDecimal="-1" for the MAYA.MAYA native asset; treat as MAYA_DECIMAL (4)
+  const parsedDecimal = parseInt(nativeDecimal, 10)
+  const assetNativeDecimal = parsedDecimal > 0 ? parsedDecimal : MAYA_DECIMAL
+  return {
+    dexBalance: convertBaseAmountDecimal(baseAmount(runeDepth, THORCHAIN_DECIMAL), CACAO_DECIMAL),
+    assetBalance: convertBaseAmountDecimal(baseAmount(assetDepth, assetNativeDecimal), CACAO_DECIMAL)
+  }
+}
 
 /**
  * Filter out mini tokens from pool assets
